@@ -1,7 +1,7 @@
 name: Validate & Process Submission
 
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize]
 
 permissions:
@@ -15,12 +15,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
       - name: Detect submission level
         id: level
         run: |
-          FILES=$(git diff --name-only origin/master...HEAD 2>/dev/null || echo "")
+          git fetch origin master
+          FILES=$(git diff --name-only origin/master...${{ github.event.pull_request.head.sha }} 2>/dev/null || echo "")
 
           LEVEL=""
           if echo "$FILES" | grep -q "^contributors/"; then
@@ -39,7 +41,7 @@ jobs:
         if: steps.level.outputs.level == '1'
         run: |
           VALID=true
-          for f in $(git diff --name-only origin/master...HEAD | grep "^contributors/" | grep ".json$" | grep -v TEMPLATE); do
+          for f in $(git diff --name-only origin/master...${{ github.event.pull_request.head.sha }} | grep "^contributors/" | grep ".json$" | grep -v TEMPLATE); do
             echo "Validating $f..."
 
             if ! python3 -c "import json; json.load(open('$f'))"; then

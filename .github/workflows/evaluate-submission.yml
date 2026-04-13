@@ -1,7 +1,7 @@
 name: Evaluate Submission
 
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize]
     paths:
       - 'submissions/**'
@@ -18,12 +18,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
       - name: Find submission file
         id: find
         run: |
-          FILE=$(git diff --name-only origin/master...HEAD | grep "^submissions/.*level2" | head -1)
+          git fetch origin master
+          FILE=$(git diff --name-only origin/master...${{ github.event.pull_request.head.sha }} | grep "^submissions/.*level2" | head -1)
           echo "file=$FILE" >> $GITHUB_OUTPUT
           if [ -z "$FILE" ]; then
             echo "No level2 submission found"
@@ -117,6 +119,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
       - uses: actions/setup-node@v4
@@ -126,7 +129,8 @@ jobs:
       - name: Find submission and extract repo URL
         id: find
         run: |
-          FILE=$(git diff --name-only origin/master...HEAD | grep "^submissions/.*level3" | head -1)
+          git fetch origin master
+          FILE=$(git diff --name-only origin/master...${{ github.event.pull_request.head.sha }} | grep "^submissions/.*level3" | head -1)
           echo "file=$FILE" >> $GITHUB_OUTPUT
 
           if [ -z "$FILE" ]; then
