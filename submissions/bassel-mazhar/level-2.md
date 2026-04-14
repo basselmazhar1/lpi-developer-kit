@@ -8,7 +8,7 @@ All tools working. Your LPI Sandbox is ready. You can now build agents that conn
 
 ---
 
-## LLM Output (Ollama)
+## LLM Output (Ollama).
 
 The SMILE methodology emphasizes starting with real-world impact before building technical systems. For a personal health tracking app, it suggests defining clear goals like improving energy levels or sleep quality before collecting large amounts of data.
 
