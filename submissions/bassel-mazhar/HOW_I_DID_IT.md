@@ -1,24 +1,86 @@
-# HOW I DID IT – Level 2
+Overview
 
-## Steps I followed
-- Forked the repository and completed Level 1
-- Installed dependencies using npm install
-- Ran the test client to verify all tools were working
-- Installed Ollama and ran a local LLM
-- Used the SMILE outputs and processed them with the LLM
+For Level 3, I built an AI agent that connects to the LPI MCP server, calls multiple tools, and generates clear, explainable answers using a local LLM (Ollama).
 
-## Problems I faced
-- I was initially confused about how to structure the Level 2 submission
-- My first attempt failed because the file naming and location were not clear
-- The GitHub Actions showed "No level2 submission found"
+The goal was a simple end-to-end flow:
+user query → tool calls → processed results → structured answer with sources.
 
-## How I solved them
-- I reviewed the repository structure more carefully
-- Renamed my file to level-2.md
-- Placed it inside submissions/bassel-mazhar/
-- Added the required HOW_I_DID_IT.md file
+What I Did
 
-## What I learned
-- How MCP servers expose structured tools
-- How to use a local LLM alongside API-like tools
-- That small formatting details can break automation pipelines
+1. Set up the LPI sandbox
+Installed dependencies and verified everything worked:
+
+npm install
+npm run build
+npm run test-client
+
+2. Tried the example agent
+Started with:
+
+python examples/agent.py "What is SMILE?"
+
+It didn’t work out-of-the-box, so I debugged it.
+
+3. Fixed the path issue
+The agent used the wrong path to start the server:
+
+["node", "dist/src/index.js"]
+
+Since it runs from examples/, I changed it to:
+
+["node", "../dist/src/index.js"]
+
+This fixed the BrokenPipe error.
+
+4. Improved subprocess reliability
+The agent was writing to stdin without checking if the process was alive, which caused crashes. Fixing the path reduced most of these issues.
+
+5. Set up Ollama (local LLM)
+
+ollama serve
+ollama pull qwen2.5:1.5b
+
+Tested it with a curl request to confirm it worked.
+
+6. Fixed Ollama API integration
+Used the correct config:
+
+OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
+
+Request:
+
+{
+  "model": OLLAMA_MODEL,
+  "prompt": prompt,
+  "stream": False
+}
+
+Response:
+
+resp.json().get("response")
+
+7. Final result
+Running:
+
+python3 agent.py "What is SMILE?"
+
+The agent successfully:
+
+called multiple tools
+combined results
+generated a clear answer
+included provenance
+What I Learned
+How MCP tool-calling works
+How to integrate Ollama locally
+Debugging Python ↔ Node subprocess issues
+Importance of correct file paths
+Handling API mismatches
+Challenges
+Wrong relative path
+BrokenPipe errors
+Ollama setup issues
+API differences across versions
+Conclusion
+
+After fixing a few issues in the example code, I ended up with a fully working agent that meets all Level 3 requirements.
